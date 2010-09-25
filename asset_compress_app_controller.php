@@ -9,4 +9,10 @@
  */
 class AssetCompressAppController extends Controller {
 
+  function beforeFilter(){
+    if(isset($this->Auth)){
+      $this->Auth->allow('get');
+    }
+  }
+  
 }
