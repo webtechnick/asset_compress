@@ -98,6 +98,25 @@ class AssetCompressHelper extends AppHelper {
 	}
 
 /**
+ * Modify the runtime configuration of the helper.
+ * Used as a get/set for the ini file values.
+ * 
+ * @param string $name The dot separated config value to change ie. Css.searchPaths
+ * @param mixed $value The value to set the config to.
+ * @return mixed Either the value being read or null.  Null also is returned when reading things that don't exist.
+ */
+	public function config($name, $value = null) {
+		if (strpos($name, '.') === false) {
+			return null;
+		}
+		list($section, $key) = explode('.', $name);
+		if ($value === null) {
+			return isset($this->_iniFile[$section][$key]) ? $this->_iniFile[$section][$key] : null;
+		}
+		$this->_iniFile[$section][$key] = $value;
+	}
+
+/**
  * Set options, merge with existing options.
  *
  * @return void
@@ -239,7 +258,7 @@ class AssetCompressHelper extends AppHelper {
  * @return string Asset tag.
  */
 	protected function _generateAsset($method, $destination, $files, $url) {
-		$fileString = 'file[]=' . implode('&file[]=', $files);
+		$fileString = 'file[]=' . implode('&amp;file[]=', $files);
 		$iniKey = $method == '_scripts' ? 'Javascript' : 'Css';
 
 		if (!empty($this->_iniFile[$iniKey]['timestamp']) && Configure::read('debug') < 2) {
@@ -254,19 +273,21 @@ class AssetCompressHelper extends AppHelper {
 			}
 		}
 
+		$baseUrl = $this->config('General.baseUrl');
+
 		$url = Router::url(array_merge(
 			$url,
 			array($destination, '?' => $fileString, 'base' => false)
 		));
 
 		list($base, $query) = explode('?', $url);
-		if (file_exists(WWW_ROOT . $base)) {
+		if (!empty($baseUrl) || file_exists(WWW_ROOT . $base)) {
 			$url = $base;
 		}
 		if ($method == '_scripts') {
-			return $this->Html->script($url);
+			return $this->Html->script($baseUrl . $url);
 		} else {
-			return $this->Html->css($url);
+			return $this->Html->css($baseUrl . $url);
 		}
 	}
 

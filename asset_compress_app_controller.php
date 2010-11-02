@@ -8,11 +8,12 @@
  * @author Mark Story
  */
 class AssetCompressAppController extends Controller {
-
+  public $components = false;
+  
   function beforeFilter(){
     if(isset($this->Auth)){
       $this->Auth->allow('get');
     }
   }
-  
 }
+?>

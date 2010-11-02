@@ -59,7 +59,7 @@ class AssetCompressHelperTestCase extends CakeTestCase {
 			'link' => array(
 				'type' => 'text/css',
 				'rel' => 'stylesheet',
-				'href' => '/asset_compress/css_files/get/default.css?file[]=base&file[]=reset'
+				'href' => '/asset_compress/css_files/get/default.css?file[]=base&amp;file[]=reset'
 			)
 		);
 		$this->assertTags($result, $expected);
@@ -78,7 +78,7 @@ class AssetCompressHelperTestCase extends CakeTestCase {
 		$expected = array(
 			'script' => array(
 				'type' => 'text/javascript',
-				'src' => '/asset_compress/js_files/get/default.js?file[]=libraries&file[]=thing'
+				'src' => '/asset_compress/js_files/get/default.js?file[]=libraries&amp;file[]=thing'
 			),
 			'/script'
 		);
@@ -198,4 +198,37 @@ class AssetCompressHelperTestCase extends CakeTestCase {
 		Configure::write('debug', 2);
 	}
 
+/**
+ * test configuration
+ *
+ * @return void
+ */
+	function testConfig() {
+		$result = $this->Helper->config('Css.stripComments');
+		$this->assertTrue($result, 'Reading is busted');
+
+		$this->assertNull($this->Helper->config('Garbage.pail'));
+
+		$this->Helper->config('Css.stripComments', false);
+		$result = $this->Helper->config('Css.stripComments');
+		$this->assertFalse($result, 'writing is busted');
+	}
+
+/**
+ * test that a baseurl configuration works well.
+ *
+ * @return void
+ */
+	function testBaseUrl() {
+		$this->Helper->config('General.baseUrl', 'http://cdn.example.com');
+		$this->Helper->script('jquery');
+		$result = $this->Helper->includeJs();
+		$expected = array(
+			array('script' => array(
+				'type' => 'text/javascript',
+				'src' => 'http://cdn.example.com/asset_compress/js_files/get/default.js'
+			))
+		);
+		$this->assertTags($result, $expected);
+	}
 }
